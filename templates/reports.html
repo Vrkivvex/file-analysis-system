@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Reports</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Previous Reports</h1>
+
+    <table>
+
+        <tr>
+            <th>ID</th>
+            <th>File Name</th>
+            <th>Status</th>
+        </tr>
+
+        {% for row in rows %}
+
+        <tr>
+
+            <td>{{ row[0] }}</td>
+
+            <td>{{ row[1] }}</td>
+
+            <td>{{ row[5] }}</td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+
+</body>
+</html>

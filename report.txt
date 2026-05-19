@@ -1,0 +1,44 @@
+=========================================
+ FILE ANALYSIS & MALWARE DETECTION REPORT
+=========================================
+
+[ FILE INFORMATION ]
+
+File Name      : cv Vishesh.pdf
+File Type      : .pdf
+File Size      : 178406 bytes
+
+[ METADATA ]
+
+Created Time   : Sun May 17 12:52:21 2026
+Modified Time  : Sun May 17 12:52:21 2026
+
+[ SECURITY ANALYSIS ]
+
+SHA-256 Hash   : caeb8f16a73308188b98e92220d334c2cd6bb61aa0e66c46fee886d88c0b771d
+
+Malware Status : No Malware Detected
+Threat Level   : LOW
+
+Scan Engine    : Signature + Metadata Based
+Analysis Status: Completed Successfully
+
+
+[ PDF ANALYSIS ]
+
+Total Pages : 2
+
+Extracted Preview :
+
+Vishesh  Roy 
+Mobile : 9310538503  
+E-Mail:  visheshroy7788@gmail.com  
+ 
+ 
+CAREER  OBJECTIVE  
+ 
+Passionate IT Support engineer skilled in troubleshooting systems, networks & hardware. Seeking a 
+role to apply technical skills, learn advanced infrastructure and contribute to uptime & smooth IT 
+ope
+
+
