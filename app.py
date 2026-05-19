@@ -1,27 +1,51 @@
 import os
 import time
 import hashlib
-import mysql.connector
+import sqlite3
 from flask import Flask, render_template, request
 from PyPDF2 import PdfReader
 from PIL import Image
 
 app = Flask(__name__)
 
+# ================= UPLOAD FOLDER ================= #
+
 UPLOAD_FOLDER = "uploads"
+
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-# DATABASE CONNECTION
-db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="root123",
-    database="file_analysis"
-)
+# Create uploads folder automatically
+if not os.path.exists(UPLOAD_FOLDER):
+
+    os.makedirs(UPLOAD_FOLDER)
+
+# ================= SQLITE DATABASE ================= #
+
+db = sqlite3.connect("database.db", check_same_thread=False)
 
 cursor = db.cursor()
 
-# HASH FUNCTION
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS reports (
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    file_name TEXT,
+
+    file_path TEXT,
+
+    file_size INTEGER,
+
+    hash_value TEXT,
+
+    status TEXT
+)
+""")
+
+db.commit()
+
+# ================= HASH FUNCTION ================= #
+
 def generate_hash(file_path):
 
     sha256 = hashlib.sha256()
@@ -34,7 +58,8 @@ def generate_hash(file_path):
 
     return sha256.hexdigest()
 
-# PDF ANALYSIS
+# ================= PDF ANALYSIS ================= #
+
 def extract_pdf_data(file_path):
 
     try:
@@ -49,7 +74,8 @@ def extract_pdf_data(file_path):
 
         return 0
 
-# IMAGE ANALYSIS
+# ================= IMAGE ANALYSIS ================= #
+
 def extract_image_data(file_path):
 
     try:
@@ -64,6 +90,8 @@ def extract_image_data(file_path):
 
         return 0, 0
 
+# ================= HOME ROUTE ================= #
+
 @app.route("/", methods=["GET", "POST"])
 
 def index():
@@ -76,6 +104,7 @@ def index():
 
         if uploaded_file:
 
+            # SAVE FILE
             file_path = os.path.join(
                 app.config["UPLOAD_FOLDER"],
                 uploaded_file.filename
@@ -83,19 +112,26 @@ def index():
 
             uploaded_file.save(file_path)
 
+            # FILE DETAILS
             file_name = uploaded_file.filename
 
             file_size = os.path.getsize(file_path)
 
             file_extension = os.path.splitext(file_path)[1]
 
-            creation_time = time.ctime(os.path.getctime(file_path))
+            creation_time = time.ctime(
+                os.path.getctime(file_path)
+            )
 
-            modified_time = time.ctime(os.path.getmtime(file_path))
+            modified_time = time.ctime(
+                os.path.getmtime(file_path)
+            )
 
+            # HASH
             hash_value = generate_hash(file_path)
 
-            # MALWARE DETECTION
+            # ================= MALWARE DETECTION ================= #
+
             suspicious_extensions = [
                 ".exe",
                 ".bat",
@@ -103,37 +139,62 @@ def index():
                 ".vbs"
             ]
 
+            dangerous_keywords = [
+                "virus",
+                "trojan",
+                "malware",
+                "hack",
+                "keylogger"
+            ]
+
             malware_status = "No Malware Detected"
 
             threat_level = "LOW"
 
+            # EXTENSION CHECK
             if file_extension.lower() in suspicious_extensions:
 
                 malware_status = "Suspicious Executable File"
 
                 threat_level = "HIGH"
 
-            # PDF ANALYSIS
+            # KEYWORD CHECK
+            for keyword in dangerous_keywords:
+
+                if keyword in file_name.lower():
+
+                    malware_status = "Malicious Keyword Detected"
+
+                    threat_level = "MEDIUM"
+
+            # ================= PDF ANALYSIS ================= #
+
             pdf_pages = None
 
             if file_extension.lower() == ".pdf":
 
                 pdf_pages = extract_pdf_data(file_path)
 
-            # IMAGE ANALYSIS
+            # ================= IMAGE ANALYSIS ================= #
+
             image_resolution = None
 
-            if file_extension.lower() in [".png", ".jpg", ".jpeg"]:
+            if file_extension.lower() in [
+                ".png",
+                ".jpg",
+                ".jpeg"
+            ]:
 
                 width, height = extract_image_data(file_path)
 
                 image_resolution = f"{width} x {height}"
 
-            # DATABASE INSERT
+            # ================= DATABASE INSERT ================= #
+
             sql = """
             INSERT INTO reports
             (file_name, file_path, file_size, hash_value, status)
-            VALUES (%s, %s, %s, %s, %s)
+            VALUES (?, ?, ?, ?, ?)
             """
 
             values = (
@@ -148,20 +209,37 @@ def index():
 
             db.commit()
 
+            # ================= REPORT ================= #
+
             report = {
+
                 "file_name": file_name,
-                "file_size": file_size,
+
                 "file_type": file_extension,
+
+                "file_size": file_size,
+
                 "created": creation_time,
+
                 "modified": modified_time,
+
                 "hash": hash_value,
+
                 "status": malware_status,
+
                 "threat": threat_level,
+
                 "pdf_pages": pdf_pages,
+
                 "image_resolution": image_resolution
             }
 
-    return render_template("index.html", report=report)
+    return render_template(
+        "index.html",
+        report=report
+    )
+
+# ================= REPORTS PAGE ================= #
 
 @app.route("/reports")
 
@@ -171,7 +249,12 @@ def reports():
 
     rows = cursor.fetchall()
 
-    return render_template("reports.html", rows=rows)
+    return render_template(
+        "reports.html",
+        rows=rows
+    )
+
+# ================= RUN APP ================= #
 
 if __name__ == "__main__":
 
