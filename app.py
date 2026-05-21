@@ -89,7 +89,7 @@ def extract_image_data(file_path):
 
         return 0, 0
 
-# ================= HOME ================= #
+# ================= HOME ROUTE ================= #
 
 @app.route("/", methods=["GET", "POST"])
 
@@ -103,6 +103,8 @@ def index():
 
         if uploaded_file:
 
+            # SAVE FILE
+
             file_path = os.path.join(
                 app.config["UPLOAD_FOLDER"],
                 uploaded_file.filename
@@ -111,7 +113,10 @@ def index():
             uploaded_file.save(file_path)
 
             # FILE INFO
+
             file_name = uploaded_file.filename
+
+            file_name_lower = file_name.lower()
 
             file_size = os.path.getsize(file_path)
 
@@ -126,52 +131,74 @@ def index():
             )
 
             # HASH
+
             hash_value = generate_hash(file_path)
 
             # ================= THREAT DETECTION ================= #
-
-            suspicious_extensions = [
-                ".exe",
-                ".bat",
-                ".cmd",
-                ".vbs"
-            ]
-
-            dangerous_keywords = [
-                "virus",
-                "trojan",
-                "malware",
-                "payload",
-                "keylogger",
-                "exploit"
-            ]
 
             malware_status = "No Malware Detected"
 
             threat_level = "LOW"
 
-            # EXTENSION CHECK
-            if file_extension.lower() in suspicious_extensions:
+            # EXECUTABLE DETECTION
 
-                malware_status = "Suspicious Executable File"
+            if ".exe" in file_name_lower:
 
-                threat_level = "HIGH"
-
-            # DOUBLE EXTENSION CHECK
-            if ".pdf.exe" in file_name.lower():
-
-                malware_status = "Hidden Executable Detected"
+                malware_status = "Executable Payload Detected"
 
                 threat_level = "HIGH"
 
-            # KEYWORD CHECK
+            # BATCH SCRIPT DETECTION
+
+            if ".bat" in file_name_lower:
+
+                malware_status = "Batch Script Threat Detected"
+
+                threat_level = "HIGH"
+
+            # DOUBLE EXTENSION DETECTION
+
+            if ".pdf.exe" in file_name_lower:
+
+                malware_status = "Hidden Executable Malware Detected"
+
+                threat_level = "CRITICAL"
+
+            # SCRIPT FILE DETECTION
+
+            if ".vbs" in file_name_lower or ".cmd" in file_name_lower:
+
+                malware_status = "Suspicious Script File"
+
+                threat_level = "HIGH"
+
+            # DANGEROUS KEYWORD ANALYSIS
+
+            dangerous_keywords = [
+
+                "payload",
+                "keylogger",
+                "exploit",
+                "backdoor",
+                "ransomware"
+
+            ]
+
             for keyword in dangerous_keywords:
 
-                if keyword in file_name.lower():
+                if keyword in file_name_lower:
 
                     malware_status = "Suspicious Signature Detected"
 
                     threat_level = "MEDIUM"
+
+            # FILE SIZE HEURISTIC
+
+            if file_size < 5000 and ".exe" in file_name_lower:
+
+                malware_status = "Compressed Executable Threat"
+
+                threat_level = "CRITICAL"
 
             # ================= PDF ANALYSIS ================= #
 
@@ -186,9 +213,11 @@ def index():
             image_resolution = None
 
             if file_extension.lower() in [
+
                 ".png",
                 ".jpg",
                 ".jpeg"
+
             ]:
 
                 width, height = extract_image_data(file_path)
@@ -203,7 +232,7 @@ def index():
 
                 "Kaspersky": "CLEAN",
 
-                "Malwarebytes": "SUSPICIOUS",
+                "Malwarebytes": "CLEAN",
 
                 "ClamAV": "CLEAN",
 
@@ -218,11 +247,26 @@ def index():
 
                     "Kaspersky": "MALICIOUS",
 
-                    "Malwarebytes": "MALICIOUS",
+                    "Malwarebytes": "SUSPICIOUS",
 
                     "ClamAV": "SUSPICIOUS",
 
                     "CrowdStrike": "MALICIOUS"
+                }
+
+            if threat_level == "CRITICAL":
+
+                multi_scan_results = {
+
+                    "Windows Defender": "CRITICAL THREAT",
+
+                    "Kaspersky": "CRITICAL THREAT",
+
+                    "Malwarebytes": "CRITICAL THREAT",
+
+                    "ClamAV": "MALICIOUS",
+
+                    "CrowdStrike": "CRITICAL THREAT"
                 }
 
             # ================= DATABASE INSERT ================= #
@@ -234,6 +278,7 @@ def index():
             """
 
             values = (
+
                 file_name,
                 file_path,
                 file_size,
@@ -292,7 +337,7 @@ def reports():
         rows=rows
     )
 
-# ================= RUN ================= #
+# ================= RUN APP ================= #
 
 if __name__ == "__main__":
 

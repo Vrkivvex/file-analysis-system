@@ -1,0 +1,13 @@
+[CRITICAL THREAT TEST FILE]
+
+This is a simulated ransomware payload used for malware detection testing.
+
+Keywords:
+trojan
+ransomware
+keylogger
+malware
+virus
+payload
+exploit
+backdoor
