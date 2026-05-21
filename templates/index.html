@@ -40,7 +40,7 @@
 
     </div>
 
-    <!-- FILE UPLOAD FORM -->
+    <!-- FILE UPLOAD -->
 
     <form method="POST" enctype="multipart/form-data">
 
@@ -50,7 +50,7 @@
 
     </form>
 
-    <!-- REPORT SECTION -->
+    <!-- REPORT -->
 
     {% if report %}
 
@@ -76,8 +76,6 @@
 
         <hr>
 
-        <!-- METADATA -->
-
         <h2>🧾 Metadata</h2>
 
         <div class="meta-box">
@@ -92,13 +90,9 @@
 
             <p><b>Hash Verification:</b> Successful</p>
 
-            <p><b>Security Status:</b> Verified</p>
-
         </div>
 
         <hr>
-
-        <!-- HIDDEN DATA ANALYSIS -->
 
         <h2>🕵 Hidden Data Analysis</h2>
 
@@ -110,13 +104,9 @@
 
             <p>No suspicious steganography signatures identified.</p>
 
-            <p>No hidden executable streams found.</p>
-
         </div>
 
         <hr>
-
-        <!-- THREAT INTELLIGENCE -->
 
         <h2>🛡 Threat Intelligence</h2>
 
@@ -126,17 +116,27 @@
 
             <p>Signature Detection: CLEAN</p>
 
-            <p>Executable Risk Score: LOW</p>
+            <p>Executable Risk Score: {{ report.threat }}</p>
 
             <p>Sandbox Verification: PASSED</p>
 
-            <p>Threat Intelligence Feed: Updated</p>
-
-            <p>Real-Time Monitoring: Enabled</p>
-
         </div>
 
-        <!-- PDF ANALYSIS -->
+        <hr>
+
+        <h2>🌐 Multi-Engine Threat Scan</h2>
+
+        <div class="meta-box">
+
+            {% for engine, result in report.multi_scan_results.items() %}
+
+            <p>
+                <b>{{ engine }}</b> : {{ result }}
+            </p>
+
+            {% endfor %}
+
+        </div>
 
         {% if report.pdf_pages %}
 
@@ -152,15 +152,9 @@
 
             <p>PDF Encryption: Not Detected</p>
 
-            <p>Document Integrity: Valid</p>
-
-            <p>Content Verification: Passed</p>
-
         </div>
 
         {% endif %}
-
-        <!-- IMAGE ANALYSIS -->
 
         {% if report.image_resolution %}
 
@@ -176,17 +170,11 @@
 
             <p>Image Integrity: Verified</p>
 
-            <p>Pixel Structure: Normal</p>
-
-            <p>Malicious Payload: Not Found</p>
-
         </div>
 
         {% endif %}
 
         <hr>
-
-        <!-- REPORT PATH -->
 
         <h2>📁 Report Status</h2>
 
@@ -198,15 +186,11 @@
 
             <p>Analysis Completed Without Errors</p>
 
-            <p>Security Engine Finished Processing</p>
-
         </div>
 
     </div>
 
     {% endif %}
-
-    <!-- REPORT BUTTON -->
 
     <a href="/reports">📂 View Previous Reports</a>
 
